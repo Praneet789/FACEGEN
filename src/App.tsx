@@ -10,7 +10,7 @@ export const App: React.FC = () => {
   const dark = useEditorStore(s => s.settings.darkMode);
   useKeyboardShortcuts();
   return (
-    <div className={`flex flex-col h-full ${dark ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
+    <div className={`flex flex-col h-full ${dark ? 'dark' : ''}`}>
       <Toolbar />
       <div className="flex flex-1 overflow-hidden">
         <AssetSidebar />

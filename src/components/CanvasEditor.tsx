@@ -120,13 +120,13 @@ export const CanvasEditor: React.FC = () => {
   const selectedAsset = placed.find(p => p.instanceId === selectedId);
   const { show } = useToast();
   return (
-    <div className="flex-1 relative flex items-center justify-center px-4 py-4" ref={drop}>
-      <div className="relative shadow-xl rounded-xl border border-white/50 dark:border-gray-700 bg-white/80 dark:bg-gray-800/70 backdrop-blur-md" style={{width: CANVAS_WIDTH, height: CANVAS_HEIGHT}}>
+    <div className="flex-1 relative flex items-center justify-center px-4 py-6" ref={drop}>
+      <div className="relative shadow-soft rounded-2xl border border-white/50 dark:border-gray-800 bg-white/80 dark:bg-gray-800/70 backdrop-blur-md" style={{width: CANVAS_WIDTH, height: CANVAS_HEIGHT}}>
         <Stage
           width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
             ref={stageRef}
-            className="rounded-lg bg-[radial-gradient(circle_at_25%_25%,#f3f4f6,#e5e7eb)] dark:bg-[radial-gradient(circle_at_25%_25%,#374151,#1f2937)]"
+            className="rounded-xl bg-[radial-gradient(circle_at_25%_25%,#f8fafc,#e5e7eb)] dark:bg-[radial-gradient(circle_at_25%_25%,#1f2937,#0f172a)]"
             onMouseDown={(e) => {
               const clickedOnEmpty = e.target === e.target.getStage();
               if (clickedOnEmpty) select(null);
@@ -153,7 +153,7 @@ export const CanvasEditor: React.FC = () => {
         </Stage>
         {!placed.length && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm font-medium bg-white/60 dark:bg-gray-800/60 backdrop-blur px-6 py-4 rounded-xl border border-white/50 dark:border-gray-700 shadow">
+            <div className="text-center text-gray-600 dark:text-gray-300 text-sm font-medium bg-white/60 dark:bg-gray-800/60 backdrop-blur px-6 py-4 rounded-xl border border-white/50 dark:border-gray-700 shadow-soft animate-fade-in-up">
               <p className="mb-1">Drag facial features from the left sidebar</p>
               <p className="text-xs opacity-80">Tip: Use Snap for alignment • Duplicate to iterate</p>
             </div>

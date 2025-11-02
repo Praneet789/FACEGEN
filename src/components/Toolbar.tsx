@@ -98,42 +98,46 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center h-12 px-4 backdrop-blur-md border-b border-white/40 dark:border-gray-700 bg-white/70 dark:bg-gray-800/60">
-      <div className="flex items-center gap-1.5">
-        <button onClick={handleSave} className="btn-outline h-8 px-2" title="Save">💾</button>
-        <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
-        <button onClick={undo} className="btn-outline h-8 px-2" title="Undo">↺</button>
-        <button onClick={redo} className="btn-outline h-8 px-2" title="Redo">↻</button>
-        <button onClick={handleClear} className="btn-outline h-8 px-2" title="Clear">🗑️</button>
-      </div>
+    <header className="sticky top-0 z-30 border-b border-white/40 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/50 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/40">
+      <div className="mx-auto max-w-[1600px] px-4">
+        <div className="flex h-14 items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <button aria-label="Save composite" onClick={handleSave} className="btn-outline h-9 px-2" title="Save">💾</button>
+            <div className="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1" />
+            <button aria-label="Undo" onClick={undo} className="btn-outline h-9 px-2" title="Undo">↺</button>
+            <button aria-label="Redo" onClick={redo} className="btn-outline h-9 px-2" title="Redo">↻</button>
+            <button aria-label="Clear canvas" onClick={handleClear} className="btn-outline h-9 px-2" title="Clear">🗑️</button>
+          </div>
 
-      <div className="flex-1 hidden md:flex items-center justify-center gap-2 text-sm font-semibold tracking-wide text-gray-800 dark:text-gray-200">
-        <img
-          src="/logo-mark.png"
-          alt="FACEGEN++ logo"
-          className="h-5 w-5 opacity-80"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-        />
-        <span>FACEGEN++</span>
-      </div>
+          <div className="flex-1 hidden md:flex items-center justify-center gap-2 text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+            <img
+              src="/logo-mark.png"
+              alt="FACEGEN++ logo"
+              className="h-5 w-5 opacity-80"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <span>FACEGEN++</span>
+          </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <div className="segmented">
-          <button aria-pressed={settings.snapToGrid} onClick={toggleSnap} title="Snap to grid">Snap</button>
-          <button aria-pressed={settings.darkMode} onClick={toggleDarkMode} title="Toggle theme">{settings.darkMode ? 'Dark' : 'Light'}</button>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="segmented" role="group" aria-label="Editor settings">
+              <button aria-pressed={settings.snapToGrid} onClick={toggleSnap} title="Snap to grid">Snap</button>
+              <button aria-pressed={settings.darkMode} onClick={toggleDarkMode} title="Toggle theme">{settings.darkMode ? 'Dark' : 'Light'}</button>
+            </div>
+            <button onClick={handleGenerateRealistic} disabled={isGenerating} className="btn h-9 px-3 flex items-center gap-2" title="Generate photorealistic">
+              {isGenerating ? (
+                <>
+                  <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round"/>
+                  </svg>
+                  <span className="hidden sm:inline">Generating</span>
+                </>
+              ) : 'AI'}
+            </button>
+          </div>
         </div>
-        <button onClick={handleGenerateRealistic} disabled={isGenerating} className="btn-outline h-8 px-3 flex items-center gap-2" title="Generate photorealistic">
-          {isGenerating ? (
-            <>
-              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                <circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round"/>
-              </svg>
-              <span className="hidden sm:inline">Generating</span>
-            </>
-          ) : 'AI'}
-        </button>
       </div>
-    </div>
+    </header>
   );
 };

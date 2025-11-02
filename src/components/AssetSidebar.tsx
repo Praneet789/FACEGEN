@@ -23,7 +23,7 @@ export const AssetSidebar: React.FC = () => {
   const toggle = (k: string) => setOpen(o => ({ ...o, [k]: !o[k] }));
   const filter = (assets: AssetDefinition[]) => assets.filter(a => a.name.toLowerCase().includes(query.toLowerCase()));
   return (
-    <aside className="w-72 shrink-0 overflow-y-auto border-r border-white/40 dark:border-gray-700 px-3 py-4 space-y-5 backdrop-blur-md bg-white/70 dark:bg-gray-900/40">
+    <aside className="hidden md:block w-72 shrink-0 overflow-y-auto border-r border-white/40 dark:border-gray-800 px-3 py-4 space-y-5 bg-white/60 dark:bg-gray-900/40 backdrop-blur">
       <div className="space-y-3">
         <AddAssetForm />
         <input
@@ -31,16 +31,17 @@ export const AssetSidebar: React.FC = () => {
           onChange={e => setQuery(e.target.value)}
           placeholder="Search features..."
           className="input text-xs"
+          aria-label="Search assets"
         />
       </div>
       <div className="space-y-4">
         {categories.map(cat => {
           const list = filter(assetsLibrary[cat.key]);
           return (
-            <div key={cat.key} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white/60 dark:bg-gray-800/60 shadow-sm">
-              <button onClick={() => toggle(cat.key)} className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold tracking-wide uppercase text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700/60 transition">
+            <div key={cat.key} className="panel overflow-hidden">
+              <button onClick={() => toggle(cat.key)} className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold tracking-wide uppercase text-gray-600 dark:text-gray-300 hover:bg-brand-50/80 dark:hover:bg-gray-800/40 transition">
                 <span>{cat.label}</span>
-                <span className="text-[10px] font-normal bg-blue-600 text-white px-2 py-0.5 rounded-full">{list.length}</span>
+                <span className="text-[10px] font-normal bg-brand-600 text-white px-2 py-0.5 rounded-full">{list.length}</span>
               </button>
               {open[cat.key] && (
                 <div className="p-3 pt-0">
