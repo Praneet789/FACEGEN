@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas-bg: #ffffff;
+  --grad-app: linear-gradient(135deg,#f5f5f5,#fafafa 60%,#ffffff);
+  --grad-app-dark: radial-gradient(circle at 30% 30%,#111827,#0b1220 70%);
+  --panel-bg: rgba(255,255,255,0.75);
+  --panel-bg-dark: rgba(31,41,55,0.65);
+  --border-color: rgba(0,0,0,0.08);
+  --border-color-dark: rgba(255,255,255,0.12);
+  --focus-ring: 0 0 0 2px rgba(107,114,128,0.6); /* gray-500 */
+}
+.dark :root {
+  --canvas-bg: #1f2937;
+  --panel-bg: var(--panel-bg-dark);
+  --border-color: var(--border-color-dark);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--grad-app);
+}
+.dark body { background: var(--grad-app-dark); }
+
+/* Reusable utility classes */
+.panel { @apply rounded-xl border backdrop-blur-md shadow-sm transition-colors; background: var(--panel-bg); border-color: var(--border-color); }
+.panel-solid { @apply rounded-xl shadow-md; background: linear-gradient(to bottom right,rgba(255,255,255,0.95),rgba(243,244,246,0.85)); }
+.dark .panel-solid { background: linear-gradient(to bottom right,rgba(31,41,55,0.9),rgba(17,24,39,0.8)); }
+
+.btn { @apply inline-flex items-center gap-1 px-3 h-8 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed select-none; background: linear-gradient(to bottom right,#111827,#374151); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.15); }
+.btn:hover:not(:disabled){ filter: brightness(1.05); }
+.btn-outline { @apply bg-transparent border border-gray-400 text-gray-800 dark:text-gray-200 dark:border-gray-500; box-shadow:none; }
+.btn-outline:hover { @apply bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900; }
+.btn-ghost { @apply bg-transparent text-gray-600 dark:text-gray-300 shadow-none; }
+.btn-ghost:hover { @apply bg-gray-200 dark:bg-gray-700; }
+
+.segmented { @apply inline-flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-600; }
+.segmented button { @apply px-3 py-1 text-sm bg-transparent hover:bg-gray-900 hover:text-white transition; }
+.segmented button[aria-pressed='true'] { @apply bg-gray-900 text-white; }
+
+.input { @apply px-2 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500; }
+.dark .input { @apply placeholder-gray-400; }
+
+.scroll-thin { scrollbar-width: thin; }
+
+/* Selection outline style for Konva (overlay element) */
+.selection-outline { position:absolute; pointer-events:none; border:2px solid #6b7280; border-radius:4px; box-shadow:0 0 0 2px rgba(107,114,128,0.3); }
+
+/* Fancy scrollbar refine */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(#9ca3af,#6b7280); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(#6b7280,#4b5563); }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(100,100,100,.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,.6); }
