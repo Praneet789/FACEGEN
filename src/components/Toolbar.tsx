@@ -13,6 +13,8 @@ export const Toolbar: React.FC = () => {
     settings: s.settings,
   }));
   const { show } = useToast();
+  const serializeProject = useEditorStore(s => s.serializeProject);
+  const applyProject = useEditorStore(s => s.applyProject);
 
   const handleSave = () => {
     const stage = (window as any).faceStage;
@@ -48,8 +50,7 @@ export const Toolbar: React.FC = () => {
       reader.onload = () => {
         const dataUrl = reader.result as string;
         const id = `gen-${Date.now()}`;
-        const { addCustomAsset } = useEditorStore.getState();
-        addCustomAsset({ name: 'Generated Face', category: 'accessories', src: dataUrl, id });
+        // Place directly on canvas without adding to library
         useEditorStore.getState().addPlaced({ id, name: 'Generated Face', category: 'accessories', src: dataUrl }, { x: 0, y: 0 });
         const img = new Image();
         img.onload = () => {
@@ -97,6 +98,33 @@ export const Toolbar: React.FC = () => {
     }
   };
 
+  const handleSaveProject = () => {
+    const json = serializeProject();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `facegen-project-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    show('Project saved', { type: 'success' });
+  };
+
+  const importRef = React.useRef<HTMLInputElement | null>(null);
+  const handleImportClick = () => importRef.current?.click();
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      applyProject(text);
+      show('Project imported', { type: 'success' });
+      if (importRef.current) importRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <header className="sticky top-0 z-30 border-b border-white/40 dark:border-gray-800/80 bg-white/70 dark:bg-gray-900/50 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/40">
       <div className="mx-auto max-w-[1600px] px-4">
@@ -135,6 +163,9 @@ export const Toolbar: React.FC = () => {
                 </>
               ) : 'AI'}
             </button>
+            <button onClick={handleSaveProject} className="btn-outline h-9 px-3" title="Save project as JSON" aria-label="Save project">⬇️</button>
+            <button onClick={handleImportClick} className="btn-outline h-9 px-3" title="Import project JSON" aria-label="Import project">⬆️</button>
+            <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
           </div>
         </div>
       </div>

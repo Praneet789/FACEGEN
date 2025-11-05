@@ -23,9 +23,10 @@ interface EditorState {
   toggleSnap: () => void;
   toggleDarkMode: () => void;
   loadDefaultAssets: () => void;
-  addCustomAsset: (asset: { name: string; category: AssetCategory; src: string; id?: string }) => void;
   duplicateSelected: () => void;
   toggleLock: (id: string) => void;
+  serializeProject: () => string;
+  applyProject: (json: string) => void;
 }
 
 const initialSettings: EditorSettings = {
@@ -52,12 +53,6 @@ const creator: StateCreator<EditorState> = (set: any, get: any) => ({
   settings: initialSettings,
   loadDefaultAssets: () => {
     set({ assetsLibrary: assetManifest });
-  },
-  addCustomAsset: ({ name, category, src, id }) => {
-    const lib = get().assetsLibrary;
-    const newAsset: AssetDefinition = { id: id || `${category}-${nanoid(6)}`, name, category, src };
-    const updated = { ...lib, [category]: [...lib[category], newAsset] };
-    set({ assetsLibrary: updated });
   },
   addPlaced: (asset: AssetDefinition, pos: {x: number; y: number}) => {
     const placed: PlacedAsset = {
@@ -156,6 +151,40 @@ const creator: StateCreator<EditorState> = (set: any, get: any) => ({
     const newHistory = get().history.slice(0, get().historyIndex + 1);
     newHistory.push(newPlaced);
     set({ placed: newPlaced, history: newHistory, historyIndex: newHistory.length -1 });
+  },
+  serializeProject: () => {
+    const snapshot = {
+      meta: { app: 'FACEGEN++', version: 1, createdAt: new Date().toISOString() },
+      settings: get().settings,
+      placed: get().placed,
+      assetsLibrary: get().assetsLibrary,
+    };
+    return JSON.stringify(snapshot, null, 2);
+  },
+  applyProject: (json: string) => {
+    try {
+      const parsed = JSON.parse(json);
+      if (!parsed || typeof parsed !== 'object') return;
+      const settings: EditorSettings = {
+        snapToGrid: !!parsed.settings?.snapToGrid,
+        gridSize: parsed.settings?.gridSize ?? 10,
+        darkMode: !!parsed.settings?.darkMode,
+      };
+      const assetsLibrary = parsed.assetsLibrary as Record<AssetCategory, AssetDefinition[]>;
+      const placed = (parsed.placed as PlacedAsset[]).map((p) => ({ ...p }));
+      // persist dark mode preference
+      if (typeof window !== 'undefined') localStorage.setItem('ff-dark', settings.darkMode ? '1' : '0');
+      set({
+        settings,
+        assetsLibrary: assetsLibrary || get().assetsLibrary,
+        placed: placed || [],
+        selectedId: null,
+        history: [placed || []],
+        historyIndex: 0,
+      });
+    } catch (e) {
+      // ignore invalid
+    }
   },
 });
 

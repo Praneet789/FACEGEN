@@ -25,12 +25,6 @@ const creator = (set, get) => ({
     loadDefaultAssets: () => {
         set({ assetsLibrary: assetManifest });
     },
-    addCustomAsset: ({ name, category, src, id }) => {
-        const lib = get().assetsLibrary;
-        const newAsset = { id: id || `${category}-${nanoid(6)}`, name, category, src };
-        const updated = { ...lib, [category]: [...lib[category], newAsset] };
-        set({ assetsLibrary: updated });
-    },
     addPlaced: (asset, pos) => {
         const placed = {
             ...asset,
@@ -141,6 +135,43 @@ const creator = (set, get) => ({
         const newHistory = get().history.slice(0, get().historyIndex + 1);
         newHistory.push(newPlaced);
         set({ placed: newPlaced, history: newHistory, historyIndex: newHistory.length - 1 });
+    },
+    serializeProject: () => {
+        const snapshot = {
+            meta: { app: 'FACEGEN++', version: 1, createdAt: new Date().toISOString() },
+            settings: get().settings,
+            placed: get().placed,
+            assetsLibrary: get().assetsLibrary,
+        };
+        return JSON.stringify(snapshot, null, 2);
+    },
+    applyProject: (json) => {
+        try {
+            const parsed = JSON.parse(json);
+            if (!parsed || typeof parsed !== 'object')
+                return;
+            const settings = {
+                snapToGrid: !!parsed.settings?.snapToGrid,
+                gridSize: parsed.settings?.gridSize ?? 10,
+                darkMode: !!parsed.settings?.darkMode,
+            };
+            const assetsLibrary = parsed.assetsLibrary;
+            const placed = parsed.placed.map((p) => ({ ...p }));
+            // persist dark mode preference
+            if (typeof window !== 'undefined')
+                localStorage.setItem('ff-dark', settings.darkMode ? '1' : '0');
+            set({
+                settings,
+                assetsLibrary: assetsLibrary || get().assetsLibrary,
+                placed: placed || [],
+                selectedId: null,
+                history: [placed || []],
+                historyIndex: 0,
+            });
+        }
+        catch (e) {
+            // ignore invalid
+        }
     },
 });
 export const useEditorStore = create()(creator);

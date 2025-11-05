@@ -17,6 +17,12 @@ export interface PlacedAsset extends AssetDefinition {
   locked?: boolean; // when true, cannot be moved/transformed
   naturalWidth?: number; // intrinsic image width
   naturalHeight?: number; // intrinsic image height
+  warp?: {
+    rows: number; // number of rows in control grid
+    cols: number; // number of cols in control grid
+    points: Array<{ x: number; y: number }>; // normalized [0..1] coordinates, length = rows*cols
+    editing?: boolean; // if true, show control points for this asset
+  };
 }
 
 export interface EditorSettings {
