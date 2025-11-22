@@ -25,8 +25,6 @@ interface EditorState {
   loadDefaultAssets: () => void;
   duplicateSelected: () => void;
   toggleLock: (id: string) => void;
-  serializeProject: () => string;
-  applyProject: (json: string) => void;
 }
 
 const initialSettings: EditorSettings = {
@@ -152,39 +150,13 @@ const creator: StateCreator<EditorState> = (set: any, get: any) => ({
     newHistory.push(newPlaced);
     set({ placed: newPlaced, history: newHistory, historyIndex: newHistory.length -1 });
   },
-  serializeProject: () => {
-    const snapshot = {
-      meta: { app: 'FACEGEN++', version: 1, createdAt: new Date().toISOString() },
-      settings: get().settings,
-      placed: get().placed,
-      assetsLibrary: get().assetsLibrary,
-    };
-    return JSON.stringify(snapshot, null, 2);
-  },
-  applyProject: (json: string) => {
-    try {
-      const parsed = JSON.parse(json);
-      if (!parsed || typeof parsed !== 'object') return;
-      const settings: EditorSettings = {
-        snapToGrid: !!parsed.settings?.snapToGrid,
-        gridSize: parsed.settings?.gridSize ?? 10,
-        darkMode: !!parsed.settings?.darkMode,
-      };
-      const assetsLibrary = parsed.assetsLibrary as Record<AssetCategory, AssetDefinition[]>;
-      const placed = (parsed.placed as PlacedAsset[]).map((p) => ({ ...p }));
-      // persist dark mode preference
-      if (typeof window !== 'undefined') localStorage.setItem('ff-dark', settings.darkMode ? '1' : '0');
-      set({
-        settings,
-        assetsLibrary: assetsLibrary || get().assetsLibrary,
-        placed: placed || [],
-        selectedId: null,
-        history: [placed || []],
-        historyIndex: 0,
-      });
-    } catch (e) {
-      // ignore invalid
-    }
+  replaceScene: (placed: PlacedAsset[], settingsPatch?: Partial<EditorSettings>) => {
+    // Recompute zIndex sequentially
+    const normalized = placed.map((p,i) => ({ ...p, zIndex: i }));
+    const newHistory = get().history.slice(0, get().historyIndex + 1);
+    newHistory.push(normalized);
+    const nextSettings = settingsPatch ? { ...get().settings, ...settingsPatch } : get().settings;
+    set({ placed: normalized, history: newHistory, historyIndex: newHistory.length -1, settings: nextSettings, selectedId: null });
   },
 });
 

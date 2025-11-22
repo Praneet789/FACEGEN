@@ -4,58 +4,60 @@
 
 :root {
   --canvas-bg: #ffffff;
-  --grad-app: radial-gradient(1200px 600px at 10% -10%, #e0e7ff, transparent 40%),
-               radial-gradient(1000px 600px at 110% 10%, #fce7f3, transparent 40%),
-               linear-gradient(180deg, #f9fafb, #ffffff);
-  --grad-app-dark: radial-gradient(1200px 600px at -10% -10%, #1f2937, transparent 40%),
-                   radial-gradient(1000px 600px at 110% 10%, #0f172a, transparent 40%),
-                   linear-gradient(180deg, #0b1220, #0b1220 60%, #0b1220);
-  --panel-bg: rgba(255,255,255,0.72);
-  --panel-bg-dark: rgba(17,24,39,0.66);
-  --border-color: rgba(2,6,23,0.08);
+  --grad-app: linear-gradient(135deg,#f5f5f5,#fafafa 60%,#ffffff);
+  --grad-app-dark: radial-gradient(circle at 30% 30%,#111827,#0b1220 70%);
+  --panel-bg: rgba(255,255,255,0.75);
+  --panel-bg-dark: rgba(31,41,55,0.65);
+  --border-color: rgba(0,0,0,0.08);
   --border-color-dark: rgba(255,255,255,0.12);
+  --focus-ring: 0 0 0 2px rgba(107,114,128,0.6); /* gray-500 */
 }
 .dark :root {
-  --canvas-bg: #0f172a;
+  --canvas-bg: #1f2937;
   --panel-bg: var(--panel-bg-dark);
   --border-color: var(--border-color-dark);
 }
 
-html, body, #root { height: 100%; }
-
-@layer base {
-  html { @apply antialiased; }
-  body { @apply text-gray-900 dark:text-gray-100; background: var(--grad-app); }
-  .dark body { background: var(--grad-app-dark); }
-  h1,h2,h3,h4 { @apply font-semibold tracking-tight; }
-  a { @apply text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300; }
+html, body, #root {
+  height: 100%;
 }
 
-/* Reusable surface + controls */
-.panel { @apply rounded-2xl border backdrop-blur-md shadow-soft transition-colors; background: var(--panel-bg); border-color: var(--border-color); }
-.panel-solid { @apply rounded-2xl shadow-soft; background: linear-gradient(to bottom right,rgba(255,255,255,0.96),rgba(243,244,246,0.88)); }
-.dark .panel-solid { background: linear-gradient(to bottom right,rgba(17,24,39,0.92),rgba(15,23,42,0.86)); }
+body {
+  background: var(--grad-app);
+}
+.dark body { background: var(--grad-app-dark); }
 
-.btn { @apply inline-flex items-center gap-1.5 px-3 h-9 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; background: linear-gradient(to bottom right,#111827,#374151); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.15); }
+/* Reusable utility classes */
+.panel { @apply rounded-xl border backdrop-blur-md shadow-sm transition-colors; background: var(--panel-bg); border-color: var(--border-color); }
+.panel-solid { @apply rounded-xl shadow-md; background: linear-gradient(to bottom right,rgba(255,255,255,0.95),rgba(243,244,246,0.85)); }
+.dark .panel-solid { background: linear-gradient(to bottom right,rgba(31,41,55,0.9),rgba(17,24,39,0.8)); }
+
+.btn { @apply inline-flex items-center gap-1 px-3 h-8 rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed select-none; background: linear-gradient(to bottom right,#111827,#374151); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.15); }
 .btn:hover:not(:disabled){ filter: brightness(1.05); }
-.btn-outline { @apply bg-transparent border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 shadow-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; }
+.btn-outline { @apply bg-transparent border border-gray-400 text-gray-800 dark:text-gray-200 dark:border-gray-500; box-shadow:none; }
 .btn-outline:hover { @apply bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900; }
 .btn-ghost { @apply bg-transparent text-gray-600 dark:text-gray-300 shadow-none; }
 .btn-ghost:hover { @apply bg-gray-200 dark:bg-gray-700; }
 
-.segmented { @apply inline-flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600; }
-.segmented button { @apply px-3 py-1.5 text-sm bg-transparent hover:bg-gray-900 hover:text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500; }
+.segmented { @apply inline-flex rounded-md overflow-hidden border border-gray-300 dark:border-gray-600; }
+.segmented button { @apply px-3 py-1 text-sm bg-transparent hover:bg-gray-900 hover:text-white transition; }
 .segmented button[aria-pressed='true'] { @apply bg-gray-900 text-white; }
 
-.input { @apply px-3 h-9 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 placeholder:text-gray-400; }
+.input { @apply px-2 h-8 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500; }
+.dark .input { @apply placeholder-gray-400; }
 
 .scroll-thin { scrollbar-width: thin; }
 
 /* Selection outline style for Konva (overlay element) */
-.selection-outline { position:absolute; pointer-events:none; border:2px solid #6366f1; border-radius:6px; box-shadow:0 0 0 2px rgba(99,102,241,0.25); }
+.selection-outline { position:absolute; pointer-events:none; border:2px solid #6b7280; border-radius:4px; box-shadow:0 0 0 2px rgba(107,114,128,0.3); }
 
 /* Fancy scrollbar refine */
-::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-thumb { background: linear-gradient(#9ca3af,#6b7280); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: linear-gradient(#6b7280,#4b5563); }
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(100,100,100,.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,.6); }
