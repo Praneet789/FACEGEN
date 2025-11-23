@@ -13,6 +13,7 @@ interface EditorState {
   addPlaced: (asset: AssetDefinition, pos: {x: number; y: number}) => void;
   updatePlaced: (id: string, patch: Partial<PlacedAsset>) => void;
   updatePlacedSilent: (id: string, patch: Partial<PlacedAsset>) => void;
+  addCustomAsset: (asset: { name: string; category: AssetCategory; src: string }) => void;
   select: (id: string | null) => void;
   deleteSelected: () => void;
   clearCanvas: () => void;
@@ -25,6 +26,7 @@ interface EditorState {
   loadDefaultAssets: () => void;
   duplicateSelected: () => void;
   toggleLock: (id: string) => void;
+  replaceScene: (placed: PlacedAsset[], settingsPatch?: Partial<EditorSettings>) => void;
 }
 
 const initialSettings: EditorSettings = {
@@ -51,6 +53,18 @@ const creator: StateCreator<EditorState> = (set: any, get: any) => ({
   settings: initialSettings,
   loadDefaultAssets: () => {
     set({ assetsLibrary: assetManifest });
+  },
+  addCustomAsset: ({ name, category, src }) => {
+    const entry: AssetDefinition = { id: nanoid(), name, category, src };
+    set((state: EditorState) => {
+      const current = state.assetsLibrary[category] ?? [];
+      return {
+        assetsLibrary: {
+          ...state.assetsLibrary,
+          [category]: [...current, entry],
+        },
+      };
+    });
   },
   addPlaced: (asset: AssetDefinition, pos: {x: number; y: number}) => {
     const placed: PlacedAsset = {

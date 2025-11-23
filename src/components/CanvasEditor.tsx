@@ -5,6 +5,7 @@ import { useDrop } from 'react-dnd';
 import { DND_TYPES } from './DraggableAsset';
 import { useEditorStore } from '../store';
 import type { AssetDefinition, PlacedAsset } from '../types';
+import { EnhancePanel } from './EnhancePanel';
 
 function useImage(url: string) {
   const [image, setImage] = React.useState<HTMLImageElement | null>(null);
@@ -20,7 +21,12 @@ const GRID_SIZE = 10;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
 
-export const CanvasEditor: React.FC = () => {
+interface CanvasEditorProps {
+  showEnhancePanel?: boolean;
+  onCloseEnhance?: () => void;
+}
+
+export const CanvasEditor: React.FC<CanvasEditorProps> = ({ showEnhancePanel = false, onCloseEnhance }) => {
   const { placed, selectedId, select, updatePlaced, addPlaced, settings, deleteSelected, duplicateSelected, bringForward, sendBackward, toggleLock } = useEditorStore(s => ({
     placed: s.placed,
     selectedId: s.selectedId,
@@ -120,6 +126,29 @@ export const CanvasEditor: React.FC = () => {
 
   const selectedAsset = placed.find(p => p.instanceId === selectedId);
   const { show } = useToast();
+  const captureComposite = React.useCallback((): string | null => {
+    const stageNode = stageRef.current?.getStage ? stageRef.current.getStage() : stageRef.current;
+    if (stageNode && typeof stageNode.toDataURL === 'function') {
+      try {
+        return stageNode.toDataURL({ pixelRatio: 1, mimeType: 'image/png' });
+      } catch (err) {
+        console.warn('Stage toDataURL failed', err);
+      }
+    }
+    const container: HTMLElement | undefined = stageRef.current?.container ? stageRef.current.container() : undefined;
+    if (container) {
+      const canvases = container.querySelectorAll('canvas');
+      if (canvases.length) {
+        const merged = document.createElement('canvas');
+        merged.width = CANVAS_WIDTH;
+        merged.height = CANVAS_HEIGHT;
+        const ctx = merged.getContext('2d');
+        canvases.forEach(canvas => ctx?.drawImage(canvas, 0, 0));
+        return merged.toDataURL('image/png');
+      }
+    }
+    return null;
+  }, []);
   return (
     <div className="flex-1 relative flex items-center justify-center px-4 py-4" ref={drop}>
       <div className="relative shadow-xl rounded-xl border border-white/50 dark:border-gray-700 bg-white/80 dark:bg-gray-800/70 backdrop-blur-md" style={{width: CANVAS_WIDTH, height: CANVAS_HEIGHT}}>
@@ -171,7 +200,75 @@ export const CanvasEditor: React.FC = () => {
           />
         )}
       </div>
+      <EnhancePanelWrapper
+        show={showEnhancePanel}
+        onClose={() => onCloseEnhance?.()}
+        capture={captureComposite}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+      />
     </div>
+  );
+};
+
+interface EnhancePanelWrapperProps {
+  show: boolean;
+  onClose: () => void;
+  capture: () => string | null;
+  width: number;
+  height: number;
+}
+
+const EnhancePanelWrapper: React.FC<EnhancePanelWrapperProps> = ({ show, onClose, capture, width, height }) => {
+  const [cooldownMs, setCooldownMs] = React.useState(0);
+  const cooldownRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    if (cooldownRef.current !== null) {
+      window.clearInterval(cooldownRef.current);
+    }
+    if (cooldownMs > 0) {
+      cooldownRef.current = window.setInterval(() => {
+        setCooldownMs(prev => {
+          if (prev <= 1000) {
+            if (cooldownRef.current !== null) {
+              window.clearInterval(cooldownRef.current);
+              cooldownRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1000;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (cooldownRef.current !== null) {
+        window.clearInterval(cooldownRef.current);
+        cooldownRef.current = null;
+      }
+    };
+  }, [cooldownMs]);
+
+  if (!show) {
+    return null;
+  }
+
+  return (
+    <EnhancePanel
+      isOpen={show}
+      onClose={() => {
+        if (cooldownRef.current !== null) {
+          window.clearInterval(cooldownRef.current);
+          cooldownRef.current = null;
+        }
+        setCooldownMs(0);
+        onClose();
+      }}
+      requestComposite={() => capture()}
+      canvasSize={{ width, height }}
+      cooldownMs={cooldownMs}
+      onStartCooldown={(ms: number) => setCooldownMs(ms)}
+    />
   );
 };
 

@@ -9,6 +9,8 @@ import { useEditorStore } from '../store';
 export const EditorTabs: React.FC = () => {
   const dark = useEditorStore(s => s.settings.darkMode);
   const [tab, setTab] = useState<'sketch' | 'match' | 'aging'>('sketch');
+  const [enhanceOpen, setEnhanceOpen] = useState(false);
+  const agingUrl = import.meta.env.VITE_AGING_URL?.trim() || 'https://823c91f2995925ce08.gradio.live/?__theme=light';
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,11 +22,16 @@ export const EditorTabs: React.FC = () => {
     params.set('tab', tab);
     window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
   }, [tab]);
+  useEffect(() => {
+    if (tab !== 'sketch' && enhanceOpen) {
+      setEnhanceOpen(false);
+    }
+  }, [tab, enhanceOpen]);
 
   const items = [
     { key: 'sketch' as const, label: 'Sketch', icon: '🖊️' },
     { key: 'match' as const, label: 'Matching', icon: '🔍', ext: 'https://crimident.preview.emergentagent.com/' },
-    { key: 'aging' as const, label: 'Aging', icon: '⏳', ext: 'https://eebc9cf9f391639173.gradio.live/?__theme=light' },
+    { key: 'aging' as const, label: 'Aging', icon: '⏳', ext: agingUrl },
   ];
 
   return (
@@ -53,12 +60,12 @@ export const EditorTabs: React.FC = () => {
         ))}
       </nav>
       <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="flex-shrink-0">{tab==='sketch'? <Toolbar /> : <div className="h-12" />}</div>
+        <div className="flex-shrink-0">{tab==='sketch'? <Toolbar onRequestEnhance={() => setEnhanceOpen(true)} /> : <div className="h-12" />}</div>
         <div className="flex flex-1 overflow-hidden relative">
           <div className={`absolute inset-0 transition-opacity duration-300 ${tab==='sketch' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="flex h-full">
               <AssetSidebar />
-              <CanvasEditor />
+              <CanvasEditor showEnhancePanel={enhanceOpen} onCloseEnhance={() => setEnhanceOpen(false)} />
               <LayerPanel />
             </div>
           </div>
@@ -73,7 +80,7 @@ export const EditorTabs: React.FC = () => {
           <div className={`absolute inset-0 transition-opacity duration-300 ${tab==='aging' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <iframe
               title="Aging Model"
-              src="https://eebc9cf9f391639173.gradio.live/?__theme=light"
+              src={agingUrl}
               className="w-full h-full border-0 bg-white dark:bg-gray-900"
               allow="clipboard-read; clipboard-write; fullscreen"
             />

@@ -1,7 +1,9 @@
 import React from 'react';
 import { useEditorStore } from '../store';
 import { useToast } from './ToastProvider';
-import { enhanceDataUrlWithMetrics } from '../algorithms/localEnhance';
+interface ToolbarProps {
+  onRequestEnhance: () => void;
+}
 
 // Targeted icons for PNG export, JSON export (download) and JSON load (upload)
 const Icon = {
@@ -30,7 +32,7 @@ const Icon = {
   ), // JSON load (upload)
 } as const;
 
-export const Toolbar: React.FC = () => {
+export const Toolbar: React.FC<ToolbarProps> = ({ onRequestEnhance }) => {
   const { undo, redo, clearCanvas, toggleSnap, toggleDarkMode, settings, placedLen } = useEditorStore(s => ({
     undo: s.undo,
     redo: s.redo,
@@ -65,31 +67,6 @@ export const Toolbar: React.FC = () => {
     show('Composite exported (fallback)', { type: 'success' });
   };
   const handleClear = () => { clearCanvas(); show('Canvas cleared', { type: 'info' }); };
-
-  const [isEnhancing, setIsEnhancing] = React.useState(false);
-  const selectedId = useEditorStore(s => s.selectedId);
-  const handleEnhance = async () => {
-    if (isEnhancing) return;
-    const stage = (window as any).faceStage;
-    if (!stage) { show('Stage not ready', { type: 'error' }); return; }
-    try {
-      setIsEnhancing(true);
-      show('Enhancing locally...', { type: 'info' });
-      const dataUrl: string = stage.toDataURL({ pixelRatio: 2, mimeType: 'image/png' });
-      const { dataUrl: enhanced, metrics } = await enhanceDataUrlWithMetrics(dataUrl, { unsharpAmount: 0.6, unsharpRadius: 2, vignetteStrength: 0.05 });
-      const st = useEditorStore.getState();
-      if (selectedId) {
-        st.updatePlaced(selectedId, { src: enhanced });
-        show(`Enhanced (${metrics.tProcessMs}ms)`, { type: 'success' });
-      } else {
-        show('Select a component to enhance', { type: 'error' });
-      }
-    } catch (e: any) {
-      show(`Enhancement failed: ${e.message}`, { type: 'error' });
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
 
   const btnBase = 'h-9 w-9 flex items-center justify-center rounded-lg text-sm font-medium bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-700 backdrop-blur focus:outline-none focus:ring-2 focus:ring-indigo-500 transition';
 
@@ -130,11 +107,9 @@ export const Toolbar: React.FC = () => {
           <button aria-pressed={settings.snapToGrid} aria-label="Toggle Grid Snap" onClick={toggleSnap} className={`${btnBase} ${settings.snapToGrid ? 'bg-indigo-600 text-white hover:bg-indigo-600' : ''}`} title="Snap to Grid">#</button>
           <button aria-pressed={settings.darkMode} aria-label="Toggle Theme" onClick={toggleDarkMode} className={`${btnBase} ${settings.darkMode ? 'bg-gray-950 text-yellow-300 hover:bg-gray-950' : ''}`} title="Toggle Theme">{settings.darkMode ? '🌙' : '☀️'}</button>
         </div>
-        <button aria-label="Enhance Selected" onClick={handleEnhance} disabled={isEnhancing} className="flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 text-white text-sm font-semibold shadow-md hover:brightness-110 active:scale-[.97] disabled:opacity-50 transition" title="Enhance selected component">
-          {isEnhancing ? (
-            <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path d="M22 12A10 10 0 0 0 12 2" stroke="currentColor" strokeWidth="4" strokeLinecap="round"/></svg>
-          ) : '✨'}
-          <span className="hidden sm:inline">{isEnhancing ? 'Enhancing' : 'Enhance'}</span>
+        <button aria-label="Open Enhance Panel" onClick={onRequestEnhance} className="flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 text-white text-sm font-semibold shadow-md hover:brightness-110 active:scale-[.97] transition" title="Open Gemini enhance panel">
+          <span role="img" aria-hidden="true">✨</span>
+          <span className="hidden sm:inline">Enhance</span>
         </button>
       </div>
     </div>
